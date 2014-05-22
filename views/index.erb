@@ -49,51 +49,24 @@
 
       <div class="content-container">
         <ol class="content-list">
+        <% @articles.each do |article| %>
+        <% count = 1 %>
           <li>
-            1.
+            <%= count %>
             <a href="vote-up"><img src="grayarrow.gif"></a>
-            <a href="https://www.firebase.com/blog/2013-08-15-firebase-leaves-beta-today.html" class="article-title">
-            Firebase Leaves Beta Today</a>
-            <span class="source">(firebase.com)</span>
+            <a href="<%= article[:url] %>" class="article-title">
+            <%= article[:title] %></a>
             <br>
             <span class="margin">
-            <span class="user">63 points by
-            <a href="#" class="user">lyime</a>
-            56 minutes ago |
-            <a href="#" class="user">17 comments</a>
+            <span class="user">Posted by:
+            <a href="#" class="user"><%= article[:user] %></a>
+            at <%= article[:time] %> |
+            <a href="#" class="user">0 comments</a>
             </span>
             </span>
           </li>
-          <li>
-            2.
-            <a href="vote-up"><img src="grayarrow.gif"></a>
-            <a href="http://fitzgeraldnick.com/weblog/50/" class="article-title">
-            Destructuring Assignment in ECMAScript 6</a>
-            <span class="source">(fitzgeraldnick.com)</span>
-            <br>
-            <span class="margin">
-            <span class="user">40 points by
-            <a href="#" class="user">mnemonik</a>
-            49 minutes ago |
-            <a href="#" class="user">5 comments</a>
-            </span>
-            </span>
-          </li>
-          <li>
-            3.
-            <a href="vote-up"><img src="grayarrow.gif"></a>
-            <a href="https://stripe.com/blog/introducing-stripe-uk" class="article-title">
-            Introducing Stripe UK</a>
-            <span class="source">(stripe.com)</span>
-            <br>
-            <span class="margin">
-            <span class="user">230 points by
-            <a href="#" class="user">woodrow</a>
-            4 hours ago |
-            <a href="#" class="user">118 comments</a>
-            </span>
-            </span>
-          </li>
+          <% count += 1 %>
+          <% end %>
           <li><a href="#" class="more">More</a>
           </li>
         </ol>
