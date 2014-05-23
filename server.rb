@@ -1,18 +1,48 @@
 require 'sinatra'
+require 'redis'
+require 'json'
 require 'uri'
 require 'csv'
 require_relative 'lib/time'
 
-def get_articles
-  articles = []
-  CSV.foreach('articles.csv', headers: true, header_converters: :symbol) do |row|
-    articles << row.to_hash
-    articles.each do |article|
-      article[:time] = Time.parse(article[:time])
-    end
+def get_connection
+  if ENV.has_key?("REDISCLOUD_URL")
+    Redis.new(url: ENV["REDISCLOUD_URL"])
+  else
+    Redis.new
   end
+end
+
+def find_articles
+  redis = get_connection
+  serialized_articles = redis.lrange("slacker:articles", 0, -1)
+
+  articles = []
+
+  serialized_articles.each do |article|
+    articles << JSON.parse(article, symbolize_names: true)
+  end
+
   articles
 end
+
+def save_article(title, url, username, time, description)
+  article = { title: title, url: url, username: username, description: description }
+
+  redis = get_connection
+  redis.rpush("slacker:articles", article.to_json)
+end
+
+# def get_articles
+#   articles = []
+#   CSV.foreach('articles.csv', headers: true, header_converters: :symbol) do |row|
+#     articles << row.to_hash
+#     articles.each do |article|
+#       article[:time] = Time.parse(article[:time])
+#     end
+#   end
+#   articles
+# end
 
 def present?(value)
   value != nil && value != ""
@@ -20,7 +50,7 @@ end
 
 def check_errors(params)
   errors = []
-  articles = get_articles
+  articles = find_articles
 
   params.each do |key, val|
     unless present?(val)
@@ -46,7 +76,7 @@ def check_errors(params)
 end
 
 get '/' do
-  @articles = get_articles
+  @articles = find_articles
   @no_articles = "No articles to display yet. Submit one!"
 
   erb :index
@@ -69,12 +99,13 @@ post '/submit' do
   # query = params.map {|key, val| "#{key}=#{val}"}.join("&")
 
   if @errors.empty?
-    article_info = [@params[:title], @params[:url], @params[:username], (Time.now), @params[:description]]
+    save_article(@params[:title], @params[:url], @params[:username], (Time.now), @params[:description])
+    # article_info = [@params[:title], @params[:url], @params[:username], (Time.now), @params[:description]]
 
-    CSV.open('articles.csv', 'a+') do |csv|
-      csv << article_info
-    end
-    redirect '/'
+    # CSV.open('articles.csv', 'a+') do |csv|
+    #   csv << article_info
+    # end
+    # redirect '/'
   else
     erb :submit
   end
