@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'redis'
 require 'json'
+require 'time'
 require 'uri'
 require 'csv'
 require_relative 'lib/time'
