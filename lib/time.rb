@@ -1,6 +1,7 @@
 
 module PrettyDate
   def self.to_pretty(time)
+    time = Time.parse(time)
     a = (Time.now - time).to_i
 
     case a

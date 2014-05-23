@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'redis'
+require 'pry'
 require 'json'
 require 'uri'
 require 'csv'
@@ -27,7 +28,7 @@ def find_articles
 end
 
 def save_article(title, url, username, time, description)
-  article = { title: title, url: url, username: username, description: description }
+  article = { title: title, url: url, username: username, time: time, description: description }
 
   redis = get_connection
   redis.rpush("slacker:articles", article.to_json)
@@ -89,25 +90,29 @@ end
 post '/submit' do
   @params = {
     title: params["title"],
-    username: params["user"],
+    username: params["username"],
     url: params["url"],
     description: params["description"]
   }
+
+  title = params[:title]
+  username = params[:username]
+  url = params[:url]
+  description = params[:description]
 
   @errors = check_errors(@params)
 
   # query = params.map {|key, val| "#{key}=#{val}"}.join("&")
 
   if @errors.empty?
-    save_article(@params[:title], @params[:url], @params[:username], (Time.now), @params[:description])
+    save_article(title, url, username, (Time.now), description)
     # article_info = [@params[:title], @params[:url], @params[:username], (Time.now), @params[:description]]
 
     # CSV.open('articles.csv', 'a+') do |csv|
     #   csv << article_info
     # end
-    # redirect '/'
+    redirect '/'
   else
     erb :submit
   end
-
 end
