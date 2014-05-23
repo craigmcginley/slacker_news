@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'csv'
+require 'pry'
 
 def get_articles
   articles = []
@@ -11,16 +12,22 @@ end
 
 get '/' do
   @articles = get_articles
+  @no_articles = "No articles to display yet. Submit one!"
 
   erb :index
 end
 
-get '/new' do
+get '/submit' do
 
-  erb :new
+  erb :submit
 end
 
-post '/new' do
+post '/submit' do
+  article_info = [params["title"], params["url"], params["user"], Time.now, params["description"]]
 
+  CSV.open('articles.csv', 'a+') do |csv|
+    csv << article_info
+  end
 
+  redirect '/'
 end
