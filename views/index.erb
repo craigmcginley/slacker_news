@@ -63,7 +63,7 @@
                 <span class="margin">
                 <span class="user">Posted by:
                 <a href="#" class="user"><%= article[:user] %></a>
-                at <%= article[:time] %> |
+                at <%= PrettyDate::to_pretty(article[:time]) %> |
                 <a href="#" class="user">0 comments</a>
                 </span>
                 </span>

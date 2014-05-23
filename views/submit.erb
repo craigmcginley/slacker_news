@@ -45,17 +45,30 @@
       </div>
 
       <div class="content-container">
+        <font color="red">
+        <% if @errors && @errors.any? %>
+          Found the following errors:
+          <ul>
+          <% @errors.each do |error| %>
+            <li><%= error %></li>
+          <% end %>
+          </ul>
+        <% end %>
+        </font>
         <form action="/submit" method="post">
           <label for="post">Username: </label>
-          <input required type="text" name="user" id="user" />
+          <input type="text" name="user" id="user" value="<%= @params[:username] %>"/>
           <br>
           <label for="post">Article Title: </label>
-          <input required type="text" name="title" id="title" />
+          <input type="text" name="title" id="title" value="<%= @params[:title] %>"/>
           <br>
           <label for="post">Article URL: </label>
-          <input required type="url" name="url" id="url" />
+          <input type="text" name="url" id="url" value="<%= @params[:url] %>" />
+          <% if params["url_error"] == "true" %>
+          ***Invalid URL.***
+          <% end %>
           <br>
-          <textarea required cols="40" rows="4" name="description" id="description" pattern=".{5,100}" placeholder="Please enter a brief descrition of the article, between 20 and 140 characters."></textarea>
+          <textarea cols="40" rows="4" name="description" id="description" pattern=".{5,100}" placeholder="Please enter a brief description of the article, between 20 and 140 characters."><%= @params[:description] %></textarea>
           <br>
           <input type="submit" value="Submit" />
         </form>
