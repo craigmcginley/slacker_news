@@ -1,6 +1,7 @@
 
 module PrettyDate
   def self.to_pretty(time)
+    return "who knows?" if time == nil
     time = Time.parse(time)
     a = (Time.now - time).to_i
 
