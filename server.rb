@@ -121,7 +121,7 @@ get '/' do
 end
 
 get '/articles' do
-  @articles = get_articles
+  @articles = get_articles.to_a
   @no_articles = "No articles yet. Submit one!"
 
   erb :'/articles/show'
