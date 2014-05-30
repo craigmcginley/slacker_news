@@ -1,49 +1,72 @@
 require 'sinatra'
-require 'redis'
 require 'json'
 require 'time'
 require 'uri'
-require 'csv'
+require 'pg'
+require 'pry'
 require_relative 'lib/time'
 
-def get_connection
-  if ENV.has_key?("REDISCLOUD_URL")
-    Redis.new(url: ENV["REDISCLOUD_URL"])
-  else
-    Redis.new
+##### CONNECTION METHODS #####
+
+configure :production do
+  set :db_connection_info, {
+    host: ENV['DB_HOST'],
+    dbname:ENV['DB_NAME'],
+    user:ENV['DB_USER'],
+    password:ENV['DB_PASSWORD']
+  }
+end
+
+configure :development do
+  set :db_connection_info, {dbname: 'slacker_news'}
+end
+
+def db_connection
+  begin
+    connection = PG.connect(settings.db_connection_info)
+    yield(connection)
+  ensure
+    connection.close
   end
 end
 
-def find_articles
-  redis = get_connection
-  serialized_articles = redis.lrange("slacker:articles", 0, -1)
+##### SQL METHODS #####
 
-  articles = []
-
-  serialized_articles.each do |article|
-    articles << JSON.parse(article, symbolize_names: true)
+def get_articles
+  db_connection do |conn|
+    conn.exec("SELECT * FROM articles")
   end
-
-  articles
 end
 
-def save_article(title, url, username, time, description)
-  article = { title: title, url: url, username: username, time: time, description: description }
-
-  redis = get_connection
-  redis.rpush("slacker:articles", article.to_json)
+def save_article(title, url, username, description)
+   db_connection do |conn|
+    conn.exec_params("INSERT INTO articles (link, title, description, username, submitted_at)
+    VALUES ($1, $2, $3, $4, NOW());", [url, title, description, username])
+  end
 end
 
-# def get_articles
-#   articles = []
-#   CSV.foreach('articles.csv', headers: true, header_converters: :symbol) do |row|
-#     articles << row.to_hash
-#     articles.each do |article|
-#       article[:time] = Time.parse(article[:time])
-#     end
-#   end
-#   articles
-# end
+def get_comments(id)
+  db_connection do |conn|
+    conn.exec_params('SELECT articles.link, articles.title, comments.username, comments.submitted_at, comments.comment
+      FROM articles
+      JOIN comments ON articles.id = comments.article_id WHERE articles.id = $1', [id])
+  end
+end
+
+def save_comment(article_id, username, comment)
+  db_connection do |conn|
+    conn.exec_params("INSERT INTO comments (article_id, username, comment, submitted_at)
+    VALUES ($1, $2, $3, NOW());", [article_id, username, comment])
+  end
+end
+
+##### ERROR CHECK METHODS #####
+
+def check_url(url)
+  db_connection do |conn|
+    conn.exec_params("SELECT * FROM articles WHERE link = $1", [url])
+  end
+end
 
 def present?(value)
   value != nil && value != ""
@@ -51,7 +74,7 @@ end
 
 def check_errors(params)
   errors = []
-  articles = find_articles
+  articles = get_articles
 
   params.each do |key, val|
     unless present?(val)
@@ -61,6 +84,10 @@ def check_errors(params)
 
   if params[:url] != "" && (params[:url] =~ URI::regexp) != 0
     errors << "Please enter a valid URL"
+  end
+
+  if !check_url(params[:url]).to_a.empty?
+    errors << "This article has already been submitted."
   end
 
   articles.each do |article|
@@ -76,18 +103,37 @@ def check_errors(params)
   errors
 end
 
+def comment_errors(comment, username)
+ errors = []
+
+  if comment == ""
+      errors << "Please enter a comment."
+  end
+  if username == ""
+      errors << "Please enter a username."
+  end
+
+  errors
+end
+
+##### REQUEST METHODS #####
+
 get '/' do
-  @articles = find_articles
-  @no_articles = "No articles to display yet. Submit one!"
-
-  erb :index
+  redirect '/articles'
 end
 
-get '/submit' do
-  erb :submit
+get '/articles' do
+  @articles = get_articles
+  @no_articles = "No articles yet. Submit one!"
+
+  erb :'/articles/show'
 end
 
-post '/submit' do
+get '/articles/new' do
+  erb :'/articles/new'
+end
+
+post '/articles/new' do
   @params = {
     title: params["title"],
     username: params["username"],
@@ -102,17 +148,33 @@ post '/submit' do
 
   @errors = check_errors(@params)
 
-  # query = params.map {|key, val| "#{key}=#{val}"}.join("&")
-
   if @errors.empty?
-    save_article(title, url, username, (Time.now), description)
-    # article_info = [@params[:title], @params[:url], @params[:username], (Time.now), @params[:description]]
-
-    # CSV.open('articles.csv', 'a+') do |csv|
-    #   csv << article_info
-    # end
-    redirect '/'
+    save_article(title, url, username, description)
+    redirect '/articles'
   else
-    erb :submit
+    erb :'/articles/new'
+  end
+end
+
+get '/articles/:article_id/comments' do
+  @id = params[:article_id]
+  @errors = []
+  @comments = get_comments(@id).to_a
+  @no_comments = "No comments yet. Add one!"
+  erb :'/comments/show'
+end
+
+post '/articles/:article_id/comments' do
+  @id = params[:article_id]
+  username = params[:username]
+  comment = params[:comment]
+  @comments = get_comments(@id).to_a
+  @errors = []
+  @errors = comment_errors(comment, username)
+  if @errors.empty?
+    save_comment(@id, username, comment)
+    redirect "/articles/#{@id}/comments"
+  else
+    erb :'comments/show'
   end
 end

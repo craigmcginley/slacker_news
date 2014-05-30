@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <title>Slacker News</title>
-    <link href="styles.css" rel="stylesheet" type="text/css" />
+    <link href="/styles.css" rel="stylesheet" type="text/css" />
   </head>
 
   <body>
@@ -14,17 +14,17 @@
       <div class="navigation-container">
         <ul class="nav">
           <li class="logo">
-            <img src="y18.gif" class="image-border">
+            <img src="/y18.gif" class="image-border">
           </li>
           <li>
-            <a href="/" id="home">Slacker News</a>
+            <a href="/articles" id="home">Slacker News</a>
           </li>
           <li>
             <a href="#">new</a>
           </li>
           <li> | </li>
           <li>
-            <a href="comments.html">comments</a>
+            <a href="#">comments</a>
           </li>
           <li> | </li>
           <li>
@@ -36,7 +36,7 @@
           </li>
           <li> | </li>
           <li>
-            <a href="#">submit</a>
+            <a href="/articles/new">submit</a>
           </li>
           <li id="login">
             <a href="#">login</a>
@@ -44,35 +44,7 @@
         </ul>
       </div>
 
-      <div class="content-container">
-        <font color="red">
-        <% if @errors && @errors.any? %>
-          Found the following errors:
-          <ul>
-          <% @errors.each do |error| %>
-            <li><%= error %></li>
-          <% end %>
-          </ul>
-        <% end %>
-        </font>
-        <form action="/submit" method="post">
-          <label for="post">Username: </label>
-          <input type="text" name="username" id="username" value="<%= @params[:username] %>"/>
-          <br>
-          <label for="post">Article Title: </label>
-          <input type="text" name="title" id="title" value="<%= @params[:title] %>"/>
-          <br>
-          <label for="post">Article URL: </label>
-          <input type="text" name="url" id="url" value="<%= @params[:url] %>" />
-          <% if params["url_error"] == "true" %>
-          ***Invalid URL.***
-          <% end %>
-          <br>
-          <textarea cols="40" rows="4" name="description" id="description" pattern=".{5,100}" placeholder="Please enter a brief description of the article, between 20 and 140 characters."><%= @params[:description] %></textarea>
-          <br>
-          <input type="submit" value="Submit" />
-        </form>
-      </div>
+      <%= yield %>
 
       <div class="footer-container" >
         <ul class="footer-links">
@@ -99,8 +71,8 @@
           <li><a href="#" class="footer-link">Apply</a></li>
           <li> | </li>
           <li><a href="#" class="footer-link">Library</a></li>
-        </ul>
-      </div>
+          </ul>
+        </div>
 
     </div>
 

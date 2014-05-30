@@ -1,0 +1,33 @@
+<div class="content-container">
+  <ol class="content-list">
+    <% if @articles == [{}] %>
+      <p><%= @no_articles %></p>
+    <% else %>
+      <% count = 1 %>
+      <% @articles.each do |article| %>
+        <li>
+          <%= count %>.
+          <a href="vote-up"><img src="grayarrow.gif"></a>
+          <span class="article-title"><%= article["title"] %></span>
+          <a href="<%= article["link"] %>" class="source">(<%= article["link"] %>)</a>
+          <br>
+          <span class="margin">
+          <span class="source"><%= article["description"] %></span>
+          <br>
+          <span class="margin">
+          <span class="user">Posted by
+          <a href="#" class="user"><%= article["username"] %></a>
+          <%= PrettyDate::to_pretty(article["submitted_at"]) %> |
+          <a href="/articles/<%= article["id"] %>/comments" class="user">comments</a>
+          </span>
+          </span>
+          </span>
+        </li>
+        <% count += 1 %>
+      <% end %>
+    <% end %>
+    <li>
+      <a href="#" class="more">More</a>
+    </li>
+  </ol>
+</div>

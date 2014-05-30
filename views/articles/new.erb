@@ -1,0 +1,29 @@
+<div class="content-container">
+  <font color="red">
+  <% if @errors && @errors.any? %>
+    Found the following errors:
+    <ul>
+    <% @errors.each do |error| %>
+      <li><%= error %></li>
+    <% end %>
+    </ul>
+  <% end %>
+  </font>
+  <form action="/articles/new" method="post">
+    <label for="post">Username: </label>
+    <input type="text" name="username" id="username" value="<%= @params[:username] %>"/>
+    <br>
+    <label for="post">Article Title: </label>
+    <input type="text" name="title" id="title" value="<%= @params[:title] %>"/>
+    <br>
+    <label for="post">Article URL: </label>
+    <input type="text" name="url" id="url" value="<%= @params[:url] %>" />
+    <% if params["url_error"] == "true" %>
+    ***Invalid URL.***
+    <% end %>
+    <br>
+    <textarea cols="40" rows="4" name="description" id="description" pattern=".{5,100}" placeholder="Please enter a brief description of the article, between 20 and 140 characters."><%= @params[:description] %></textarea>
+    <br>
+    <input type="submit" value="Submit" />
+  </form>
+</div>

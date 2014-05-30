@@ -1,0 +1,45 @@
+<div class="content-container">
+  <form action="/articles/<%= @id %>/comments" method="post">
+
+    <font color="red">
+      <% if @errors.empty? == false %>
+        <% @errors.each do |message| %>
+          <%=message%>
+          <br>
+        <%end%>
+      <%end%>
+    </font>
+
+    <div>
+      <label for="comment">Comment: </label>
+      <input type="text" name="comment" id="comment" placeholder="Enter a brief comment about the article." value="<%=params[:comment]%>"/>
+    </div>
+    <div>
+      <label for="username">Username: </label>
+      <input type="text" name="username" id="username" placeholder="Enter username." value="<%=params[:username]%>"/>
+    </div>
+
+    <input type="submit" value="Submit"/>
+  </form>
+
+  <% if @comments == [] %>
+    <p><%= @no_comments %></p>
+  <% else %>
+    <h2><%= @comments[0]["title"] %> - Comments</h2>
+    <ol class="content-list">
+      <% @comments.each do |comment| %>
+        <li>
+          <%= comment["comment"] %>
+          <br>
+          <span class="user">Posted by:
+          <a href="#" class="user"><%= comment["username"] %></a>
+          <%= PrettyDate::to_pretty(comment["submitted_at"]) %>
+          </span>
+        </li>
+      <% end %>
+      <li>
+        <a href="#" class="more">More</a>
+      </li>
+    </ol>
+  <% end %>
+</div>
