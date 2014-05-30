@@ -3,7 +3,6 @@ require 'json'
 require 'time'
 require 'uri'
 require 'pg'
-require 'pry'
 require_relative 'lib/time'
 
 ##### CONNECTION METHODS #####
