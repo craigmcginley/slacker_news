@@ -9,9 +9,9 @@ require_relative 'lib/time'
 configure :production do
   set :db_connection_info, {
     host: ENV['DB_HOST'],
-    dbname:ENV['DB_NAME'],
-    user:ENV['DB_USER'],
-    password:ENV['DB_PASSWORD']
+    dbname: ENV['DB_NAME'],
+    user: ENV['DB_USER'],
+    password: ENV['DB_PASSWORD']
   }
 end
 
